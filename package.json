@@ -15,15 +15,16 @@
   },
   "dependencies": {
     "@quasar/extras": "^2.1.0",
+    "axios": "^1.20.0",
     "quasar": "^2.34.0",
     "vue": "^3.5.22",
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "oxfmt": "^0.x",
-    "oxlint": "^1.x",
     "@quasar/app-vite": "^3.10.1",
     "autoprefixer": "^10.4.27",
+    "oxfmt": "^0.x",
+    "oxlint": "^1.x",
     "postcss": "^8.5.8"
   },
   "keywords": [
