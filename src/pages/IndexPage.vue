@@ -1,31 +1,41 @@
 <template>
-  <q-page padding>
-    <section class="hero">
-      <div class="text-overline text-primary">VIDEO-GROUNDED AI SEARCH</div>
-      <div class="hero__title">Turn videos into searchable answers</div>
-      <p class="hero__sub">
-        Upload a video, preview it, and jump to the exact moment that answers your question.
-      </p>
-      <q-btn
-        to="/projects/1"
-        color="primary"
-        size="lg"
-        unelevated
-        rounded
-        no-caps
-        icon="upload"
-        label="Upload a video"
-      />
-    </section>
+  <q-page padding class="home-page">
+    <div class="page-container">
+      <section class="hero">
+        <div class="hero__eyebrow">Video-grounded AI search</div>
+        <h1 class="hero__title">Turn videos into searchable answers</h1>
+        <p class="hero__sub">
+          Upload a video, preview it, and jump to the exact moment that answers your question.
+        </p>
+        <q-btn
+          to="/projects/1/upload"
+          color="primary"
+          size="lg"
+          unelevated
+          rounded
+          no-caps
+          icon="upload"
+          label="Upload a video"
+          class="hero__button"
+        />
+      </section>
 
-    <div class="row q-col-gutter-md q-mt-md">
-      <div v-for="f in features" :key="f.title" class="col-12 col-md-4">
-        <q-card flat class="app-card feature q-pa-lg">
-          <q-avatar color="blue-1" text-color="primary" :icon="f.icon" size="56px" />
-          <div class="text-h6 q-mt-md">{{ f.title }}</div>
-          <div class="text-grey-7">{{ f.text }}</div>
-        </q-card>
-      </div>
+      <section class="row q-col-gutter-md steps">
+        <div v-for="feature in features" :key="feature.title" class="col-12 col-md-4">
+          <q-card flat class="app-card feature">
+            <q-avatar
+              rounded
+              size="56px"
+              color="blue-1"
+              text-color="primary"
+              :icon="feature.icon"
+              class="feature__icon"
+            />
+            <div class="feature__title">{{ feature.title }}</div>
+            <div class="feature__text">{{ feature.text }}</div>
+          </q-card>
+        </div>
+      </section>
     </div>
   </q-page>
 </template>
@@ -37,3 +47,5 @@ const features = [
   { icon: 'manage_search', title: 'Search segments', text: 'Find any topic and play it instantly.' },
 ]
 </script>
+
+<style lang="scss" src="../css/IndexPage.scss" scoped></style>

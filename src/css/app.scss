@@ -42,25 +42,8 @@ body {
   font-weight: 600;
   letter-spacing: 0.5px;
 }
-.hero {
-  text-align: center;
-  padding: 64px 16px 32px;
 
-  &__title {
-    font-size: 2.4rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 8px 0 12px;
-  }
-
-  &__sub {
-    max-width: 560px;
-    margin: 0 auto 24px;
-    color: #6b7686;
-    font-size: 1.1rem;
-  }
-}
-
+// hover lift for cards (home steps and project segments)
 .feature,
 .segment {
   transition:
@@ -73,6 +56,7 @@ body {
   }
 }
 
+// upload dropzone
 .dropzone {
   display: flex;
   flex-direction: column;

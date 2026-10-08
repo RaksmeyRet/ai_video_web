@@ -11,7 +11,16 @@
       <q-list padding>
         <q-item-label header>Menu</q-item-label>
 
-        <q-item v-for="link in links" :key="link.to" :to="link.to" clickable v-ripple>
+        <q-item
+          v-for="link in links"
+          :key="link.to"
+          :to="link.to"
+          :exact="link.exact"
+          clickable
+          v-ripple
+          class="menu__item"
+          active-class="menu__item--active"
+        >
           <q-item-section avatar>
             <q-icon :name="link.icon" />
           </q-item-section>
@@ -34,7 +43,21 @@ import { ref } from 'vue'
 const drawer = ref(false)
 
 const links = [
-  { label: 'Home', icon: 'home', to: '/' },
-  { label: 'Project', icon: 'video_library', to: '/projects/1' },
+  { label: 'Home', icon: 'home', to: '/', exact: true },
+  { label: 'Project', icon: 'video_library', to: '/projects/1/upload', exact: false },
 ]
 </script>
+
+<style lang="scss" scoped>
+.menu__item {
+  margin: 4px 8px;
+  border-radius: 10px;
+  color: #2b3445;
+
+  &--active {
+    background: #e3efff;
+    color: var(--q-primary);
+    font-weight: 600;
+  }
+}
+</style>
