@@ -39,6 +39,7 @@
 
             <input ref="inputRef" type="file" accept="video/*" hidden @change="onPick" />
 
+            <!-- Drop zone -->
             <div
               v-if="!file"
               class="dropzone upload-card__dropzone"
@@ -74,6 +75,7 @@
               />
             </div>
 
+            <!-- Selected video preview -->
             <div v-else class="upload-card__preview">
               <div class="upload-card__preview-heading">
                 <div>
@@ -132,6 +134,90 @@
               :disable="uploading"
             />
 
+            <!-- Segment records -->
+            <div class="upload-card__section-title q-mt-lg">Segment details</div>
+            <div class="upload-card__section-hint">Add one record for each segment of this video.</div>
+
+
+            <div v-for="(seg, i) in segments" :key="seg.key" class="upload-card__segment">
+              <div class="upload-card__segment-head">
+                <span class="upload-card__segment-title">Segment {{ i + 1 }}</span>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  icon="delete_outline"
+                  color="grey-7"
+                  aria-label="Remove segment"
+                  :disable="uploading || segments.length === 1"
+                  @click="removeSegment(i)"
+                />
+              </div>
+
+              <div class="upload-card__grid q-mt-md">
+                <q-input v-model="seg.startTime" outlined dense label="Start time (mm:ss)" placeholder="06:16" mask="##:##" :disable="uploading" />
+                <q-input v-model="seg.endTime" outlined dense label="End time (mm:ss)" placeholder="08:40" mask="##:##" :disable="uploading" />
+              </div>
+              <q-input
+                v-model="seg.title"
+                outlined
+                dense
+                class="q-mt-md"
+                label="Title"
+                placeholder="How to Apply for Invoice Financing"
+                :disable="uploading"
+              />
+              <q-input
+                v-model="seg.summary"
+                type="textarea"
+                outlined
+                autogrow
+                class="q-mt-md"
+                label="Summary"
+                :disable="uploading"
+              />
+              <q-select
+                v-model="seg.keywords"
+                outlined
+                dense
+                multiple
+                use-input
+                use-chips
+                hide-dropdown-icon
+                new-value-mode="add-unique"
+                class="q-mt-md"
+                label="Keywords"
+                hint="Type a keyword and press Enter"
+                :disable="uploading"
+              />
+              <q-select
+                v-model="seg.questions"
+                outlined
+                dense
+                multiple
+                use-input
+                use-chips
+                hide-dropdown-icon
+                new-value-mode="add-unique"
+                class="q-mt-md"
+                label="Possible questions"
+                hint="Type a question and press Enter"
+                :disable="uploading"
+              />
+            </div>
+
+            <q-btn
+              outline
+              rounded
+              no-caps
+              color="primary"
+              icon="add"
+              label="Add segment"
+              class="q-mt-md"
+              :disable="uploading"
+              @click="addSegment"
+            />
+
             <div v-if="uploading" class="q-mt-md">
               <q-linear-progress rounded size="8px" :value="progress" />
               <div class="text-caption text-grey-8 q-mt-xs">
@@ -180,12 +266,36 @@ const $q = useQuasar()
 const router = useRouter()
 
 const MAX_MB = 200
+const UPLOAD_URL = 'http://localhost:8000/api/videos' // change to your backend endpoint
+const REDIRECT_TO = '/'
 
 const inputRef = ref(null)
 const videoRef = ref(null)
 const file = ref(null)
 const previewUrl = ref('')
 const description = ref('')
+const videoId = ref('')
+
+let keySeq = 0
+const newSegment = () => ({
+  key: ++keySeq,
+  segmentId: '',
+  startTime: '',
+  endTime: '',
+  title: '',
+  summary: '',
+  keywords: [],
+  questions: [],
+})
+const segments = ref([newSegment()])
+
+function addSegment() {
+  segments.value.push(newSegment())
+}
+
+function removeSegment(i) {
+  if (segments.value.length > 1) segments.value.splice(i, 1)
+}
 const dragging = ref(false)
 const uploading = ref(false)
 const progress = ref(0)
@@ -226,7 +336,7 @@ function setFile(f) {
 
 function onPick(e) {
   setFile(e.target.files?.[0])
-  e.target.value = ''
+  e.target.value = '' // allow picking the same file again
 }
 
 function onDrop(e) {
@@ -246,29 +356,53 @@ function clearFile() {
 function reset() {
   clearFile()
   description.value = ''
+  videoId.value = ''
+  segments.value = [newSegment()]
   progress.value = 0
-}
-
-function goHome() {
-  router.push('/')
 }
 
 function onCancel() {
   reset()
-  goHome()
+  router.push(REDIRECT_TO)
 }
 
 function onUploaded() {
   $q.notify({ type: 'positive', message: 'Video uploaded successfully' })
-  router.push('/')
+  router.push(REDIRECT_TO)
 }
+
+const TIME_RE = /^\d{2}:[0-5]\d$/
+const toSeconds = (t) => {
+  const [m, s] = t.split(':').map(Number)
+  return m * 60 + s
+}
+
 
 function upload() {
   if (!file.value) return
 
+  const msg = validate()
+  if (msg) {
+    error.value = msg
+    return
+  }
+
   const body = new FormData()
   body.append('file', file.value)
   body.append('description', description.value.trim())
+  const num = videoId.value.replace(/\D/g, '')
+  const payload = segments.value.map((seg, i) => ({
+    segment_id: seg.segmentId.trim() || `SEG-${num}-${String(i + 1).padStart(2, '0')}`,
+    video_id: videoId.value.trim(),
+    start_time: seg.startTime,
+    end_time: seg.endTime,
+    title: seg.title.trim(),
+    summary: seg.summary.trim(),
+    keywords: seg.keywords,
+    possible_questions: seg.questions,
+  }))
+  body.append('video_id', videoId.value.trim())
+  body.append('segments', JSON.stringify(payload))
 
   uploading.value = true
   currentStep.value = 3
@@ -276,20 +410,14 @@ function upload() {
   error.value = ''
 
   const xhr = new XMLHttpRequest()
-  xhr.open('POST', 'http://localhost:8000/api/videos')
+  xhr.open('POST', UPLOAD_URL)
   xhr.upload.onprogress = (e) => {
     if (e.lengthComputable) progress.value = e.loaded / e.total
   }
   xhr.onload = () => {
     uploading.value = false
     if (xhr.status >= 200 && xhr.status < 300) {
-      let data = null
-      try {
-        data = JSON.parse(xhr.responseText)
-      } catch {
-        // response is not JSON, that is fine
-      }
-      onUploaded(data)
+      onUploaded()
       reset()
     } else {
       error.value = 'Upload failed. Please try again.'
@@ -309,69 +437,4 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style lang="scss" scoped>
-.upload-page {
-  min-height: calc(100vh - 57px);
-  padding-top: 20px;
-  padding-bottom: 40px;
-
-  &__inner {
-    width: min(100%, 760px);
-    margin-right: auto;
-    margin-left: auto;
-  }
-
-  &__header,
-  &__content {
-    width: 100%;
-  }
-
-  &__header {
-    margin-bottom: 20px;
-  }
-
-  &__header h1 {
-    color: #172033;
-    font-weight: 700;
-  }
-
-  &__steps {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 20px;
-    color: #697586;
-    font-size: 0.85rem;
-  }
-
-  &__step {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    white-space: nowrap;
-
-    &--active {
-      color: #172033;
-      font-weight: 600;
-    }
-
-    &--done {
-      color: #172033;
-    }
-  }
-
-  &__step-divider {
-    flex: 1;
-    min-width: 12px;
-  }
-}
-
-@media (max-width: 599px) {
-  .upload-page__steps {
-    gap: 8px;
-    font-size: 0.75rem;
-  }
-}
-</style>
-
-<style lang="scss" src="../css/UploadVideo.scss" scoped></style>
+<style lang="scss" src="../css/UploadPage.scss" scoped></style>
