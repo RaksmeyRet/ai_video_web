@@ -331,7 +331,7 @@ const router = useRouter()
 
 const MAX_MB = 200
 const UPLOAD_URL = '/api/videos' // change to your backend endpoint
-const REDIRECT_TO = '/'
+const REDIRECT_TO = '/project'
 
 const inputRef = ref(null)
 const videoRef = ref(null)

@@ -43,8 +43,7 @@ import { ref } from 'vue'
 const drawer = ref(false)
 
 const links = [
-  { label: 'Home', icon: 'home', to: '/', exact: true },
-  { label: 'Project', icon: 'video_library', to: '/projects/1/upload', exact: false },
+  { label: 'Project', icon: 'video_library', to: '/project', exact: true },
 ]
 </script>
 
