@@ -12,7 +12,7 @@ export function useVideoUpload() {
   const uploading = ref(false)
   const progress = ref(0)
   const error = ref('')
-  const currentStep = ref(1)
+  const currentStep = ref(2)
 
   function revoke() {
     if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
@@ -37,15 +37,11 @@ export function useVideoUpload() {
     file.value = null
     previewUrl.value = ''
     error.value = ''
-    currentStep.value = 1
+    currentStep.value = 2
   }
 
   // returns true when all segments are saved
   async function submit({ segments }) {
-    if (!file.value) {
-      error.value = 'Please choose a video first.'
-      return false
-    }
     const videoId = newVideoId()
     const built = buildSegments(segments, videoId)
     if (built.error) {

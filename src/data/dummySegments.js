@@ -7,7 +7,7 @@ export const dummySegments = [
     summary:
       'Explains how a seller sub mits an invoice financing request through KHEMRA after completing a verified transaction.',
     keywords: ['invoice financing', 'seller', 'financing request', 'bank', 'invoice'],
-    questions: [
+    possible_questions: [
       'How do I apply?',
       'Can I borrow against an invoice?',
       'Where do I submit financing?',

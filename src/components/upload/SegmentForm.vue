@@ -68,7 +68,7 @@
       :disable="disabled"
     />
     <q-select
-      v-model="seg.questions"
+      v-model="seg.possible_questions"
       outlined
       dense
       multiple

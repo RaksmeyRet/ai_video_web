@@ -9,7 +9,7 @@ export function useSegments() {
     title: '',
     summary: '',
     keywords: [],
-    questions: []
+    possible_questions: []
   })
 
   const segments = ref([create()])

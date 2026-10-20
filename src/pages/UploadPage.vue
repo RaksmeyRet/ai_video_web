@@ -3,9 +3,10 @@
     <div class="upload-page__inner">
       <header class="upload-page__header">
         <div class="text-overline text-primary">VIDEO WORKSPACE</div>
-        <h1 class="text-h4 q-my-sm">Upload your video</h1>
+        <h1 class="text-h4 q-my-sm">Add video segments</h1>
         <p class="text-body1 text-grey-7 q-mb-none">
-          Select a video, preview it, then upload it with an optional description.
+          Optionally select a video for reference, then add and save its
+          segments.
         </p>
       </header>
 
@@ -15,13 +16,21 @@
         <q-card flat bordered class="upload-card">
           <q-card-section class="upload-card__body">
             <template v-if="!file">
-              <div class="upload-card__section-title">Video file</div>
+              <div class="upload-card__section-title"
+                >Video file (optional)</div
+              >
               <div class="upload-card__section-hint">
                 MP4, MOV, or WebM · up to {{ MAX_MB }} MB
               </div>
             </template>
 
-            <input ref="inputRef" type="file" accept="video/*" hidden @change="onPick" />
+            <input
+              ref="inputRef"
+              type="file"
+              accept="video/*"
+              hidden
+              @change="onPick"
+            />
 
             <DropZone v-if="!file" @browse="pick" @drop="setFile" />
             <VideoPreview
@@ -34,24 +43,19 @@
               @error="error = $event"
             />
 
-            <div v-if="error" class="text-negative text-caption q-mt-md" role="alert">
+            <div
+              v-if="error"
+              class="text-negative text-caption q-mt-md"
+              role="alert"
+            >
               {{ error }}
             </div>
 
-            <q-input
-              v-model="description"
-              type="textarea"
-              outlined
-              autogrow
-              class="q-mt-lg"
-              label="Description (optional)"
-              placeholder="What is this video about?"
-              :disable="uploading"
-            />
-
-            <div class="upload-card__section-title q-mt-lg">Segment details</div>
+            <div class="upload-card__section-title q-mt-lg"
+              >Segment details</div
+            >
             <div class="upload-card__section-hint">
-              Add one record for each segment of this video.
+              Add one record for each video segment.
             </div>
 
             <SegmentForm
@@ -76,7 +80,11 @@
               @click="addSegment"
             />
 
-            <UploadProgress v-if="uploading" :progress="progress" class="q-mt-md" />
+            <UploadProgress
+              v-if="uploading"
+              :progress="progress"
+              class="q-mt-md"
+            />
           </q-card-section>
 
           <q-separator />
@@ -98,8 +106,8 @@
               no-caps
               color="primary"
               icon="upload"
-              label="Upload"
-              :disable="!file || uploading"
+              label="Save segments"
+              :disable="uploading"
               @click="upload"
             />
           </q-card-actions>
@@ -126,7 +134,6 @@ const $q = useQuasar()
 const router = useRouter()
 
 const inputRef = ref(null)
-const description = ref('')
 
 const {
   segments,
@@ -157,7 +164,6 @@ function onPick(e) {
 function resetAll() {
   clearFile()
   resetSegments()
-  description.value = ''
   progress.value = 0
 }
 
@@ -168,11 +174,10 @@ function onCancel() {
 
 async function upload() {
   const ok = await submit({
-    description: description.value,
     segments: segments.value
   })
   if (!ok) return
-  $q.notify({ type: 'positive', message: 'Video uploaded successfully' })
+  $q.notify({ type: 'positive', message: 'Segments saved successfully' })
   router.push(REDIRECT_TO)
   resetAll()
 }

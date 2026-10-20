@@ -38,7 +38,7 @@ def input_segment(video_id, index):
     title     = input("Title      : ").strip()
     summary   = input("Summary    : ").strip()
     keywords  = input("Keywords   (comma separated): ").strip()
-    questions = input("Questions  (comma separated): ").strip()
+    possible_questions = input("Questions  (comma separated): ").strip()
 
     return {
         "video_id": video_id,
@@ -47,7 +47,7 @@ def input_segment(video_id, index):
         "title": title,
         "summary": summary,
         "keywords": [k.strip() for k in keywords.split(",") if k.strip()],
-        "questions": [q.strip() for q in questions.split("?") if q.strip()],
+        "possible_questions": [q.strip() for q in possible_questions.split("?") if q.strip()],
     }
 
 

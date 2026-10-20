@@ -27,7 +27,7 @@ export function buildSegments(list, videoId) {
   for (const [i, s] of list.entries()) {
     const empty =
       !s.startTime && !s.endTime && !s.title.trim() && !s.summary.trim() &&
-      !s.keywords.length && !s.questions.length
+      !s.keywords.length && !s.possible_questions.length
     if (empty) continue
 
     const n = i + 1
@@ -44,7 +44,7 @@ export function buildSegments(list, videoId) {
       title: s.title.trim(),
       summary: s.summary.trim(),
       keywords: s.keywords,
-      questions: s.questions,
+      possible_questions: s.possible_questions,
     })
   }
   return { data }
