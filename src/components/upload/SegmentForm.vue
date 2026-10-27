@@ -15,24 +15,55 @@
     </div>
 
     <div class="upload-card__grid q-mt-md">
-      <q-input
-        v-model="seg.startTime"
-        outlined
-        dense
-        label="Start time (mm:ss)"
-        placeholder="06:16"
-        mask="##:##"
-        :disable="disabled"
-      />
-      <q-input
-        v-model="seg.endTime"
-        outlined
-        dense
-        label="End time (mm:ss)"
-        placeholder="08:40"
-        mask="##:##"
-        :disable="disabled"
-      />
+      <!-- Video: start and end in seconds -->
+      <template v-if="sourceType === 'video'">
+        <q-input
+          v-model="seg.startTime"
+          type="number"
+          min="0"
+          step="0.1"
+          outlined
+          dense
+          label="Start time (seconds)"
+          placeholder="0.0"
+          suffix="s"
+          :disable="disabled"
+        />
+        <q-input
+          v-model="seg.endTime"
+          type="number"
+          min="0"
+          step="0.1"
+          outlined
+          dense
+          label="End time (seconds)"
+          placeholder="30.0"
+          suffix="s"
+          :disable="disabled"
+        />
+      </template>
+
+      <!-- PDF: start and end page -->
+      <template v-else>
+        <q-input
+          v-model="seg.pageStart"
+          type="number"
+          min="1"
+          outlined
+          dense
+          label="Start page"
+          :disable="disabled"
+        />
+        <q-input
+          v-model="seg.pageEnd"
+          type="number"
+          min="1"
+          outlined
+          dense
+          label="End page"
+          :disable="disabled"
+        />
+      </template>
     </div>
 
     <q-input
@@ -41,7 +72,7 @@
       dense
       class="q-mt-md"
       label="Title"
-      placeholder="How to Apply for Invoice Financing"
+      placeholder="Introduction & Welcome"
       :disable="disabled"
     />
     <q-input
@@ -51,6 +82,15 @@
       autogrow
       class="q-mt-md"
       label="Summary"
+      :disable="disabled"
+    />
+    <q-input
+      v-model="seg.transcript"
+      type="textarea"
+      outlined
+      autogrow
+      class="q-mt-md"
+      label="Transcript (optional)"
       :disable="disabled"
     />
     <q-select
@@ -68,7 +108,7 @@
       :disable="disabled"
     />
     <q-select
-      v-model="seg.possible_questions"
+      v-model="seg.questions"
       outlined
       dense
       multiple
@@ -90,6 +130,7 @@ const seg = defineModel({ type: Object, required: true })
 
 defineProps({
   index: { type: Number, required: true },
+  sourceType: { type: String, default: 'video' }, // 'video' | 'pdf'
   disabled: { type: Boolean, default: false },
   canRemove: { type: Boolean, default: true }
 })

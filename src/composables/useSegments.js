@@ -6,10 +6,12 @@ export function useSegments() {
     key: ++keySeq,
     startTime: '',
     endTime: '',
+    pageStart: '',
+    pageEnd: '',
     title: '',
     summary: '',
     keywords: [],
-    possible_questions: []
+    questions: []
   })
 
   const segments = ref([create()])

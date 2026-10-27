@@ -24,8 +24,8 @@
 defineProps({ currentStep: { type: Number, required: true } })
 
 const steps = [
-  { n: 1, label: 'Video (optional)' },
+  { n: 1, label: 'Upload files' },
   { n: 2, label: 'Add segments' },
-  { n: 3, label: 'Save segments' }
+  { n: 3, label: 'Save' }
 ]
 </script>

@@ -1,18 +1,26 @@
 import { onBeforeUnmount, ref } from 'vue'
 import {
+  buildKnowledge,
   buildSegments,
-  newVideoId,
-  saveSegments,
+  createKnowledge,
+  readPdfPageCount,
+  readVideoDuration,
+  uploadToS3,
   validateVideo
 } from '../utils/upload'
 
 export function useVideoUpload() {
-  const file = ref(null)
+  const file = ref(null) // the video on your computer
   const previewUrl = ref('')
   const uploading = ref(false)
   const progress = ref(0)
   const error = ref('')
-  const currentStep = ref(2)
+  const createdId = ref(null)
+
+  const fail = msg => {
+    error.value = msg
+    return false
+  }
 
   function revoke() {
     if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
@@ -29,7 +37,6 @@ export function useVideoUpload() {
     revoke()
     file.value = f
     previewUrl.value = URL.createObjectURL(f)
-    currentStep.value = 2
   }
 
   function clearFile() {
@@ -37,33 +44,39 @@ export function useVideoUpload() {
     file.value = null
     previewUrl.value = ''
     error.value = ''
-    currentStep.value = 2
   }
 
-  // returns true when all segments are saved
-  async function submit({ segments }) {
-    const videoId = newVideoId()
-    const built = buildSegments(segments, videoId)
-    if (built.error) {
-      error.value = built.error
-      return false
-    }
-    if (!built.data.length) {
-      error.value = 'Add at least one segment.'
-      return false
-    }
+  // form: { type, title, description, language, pdf, pageCount, segments }
+  async function submit(form) {
+    error.value = ''
+    const source = form.type === 'video' ? file.value : form.pdf
+
+    if (!source) return fail(form.type === 'video' ? 'Please add a video.' : 'Please add a PDF.')
+    if (!form.title.trim()) return fail('Enter a title.')
+
+    const built = buildSegments(form.segments, form.type)
+    if (built.error) return fail(built.error)
+    if (!built.data.length) return fail('Add at least one segment.')
 
     uploading.value = true
-    currentStep.value = 3
     progress.value = 0
-    error.value = ''
     try {
-      await saveSegments(built.data, p => (progress.value = p))
+      // video or PDF -> S3 (with progress), then send its URL
+      const fileUrl = await uploadToS3(source, p => (progress.value = p))
+      const duration = form.type === 'video' ? await readVideoDuration(source) : null
+      const pageCount =
+        form.type === 'pdf'
+          ? Number(form.pageCount) || (await readPdfPageCount(source))
+          : null
+
+      const created = await createKnowledge(
+        buildKnowledge({ ...form, fileUrl, duration, pageCount, segments: built.data })
+      )
+      createdId.value = created.id
+      progress.value = 1
       return true
     } catch (e) {
-      error.value = e.message
-      currentStep.value = 2
-      return false
+      return fail(e.message)
     } finally {
       uploading.value = false
     }
@@ -77,7 +90,7 @@ export function useVideoUpload() {
     uploading,
     progress,
     error,
-    currentStep,
+    createdId,
     setFile,
     clearFile,
     submit

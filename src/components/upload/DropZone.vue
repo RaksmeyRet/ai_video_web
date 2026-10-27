@@ -1,47 +1,101 @@
 <template>
   <div
-    class="dropzone upload-card__dropzone"
-    :class="{ 'dropzone--active': dragging }"
+    class="file-drop"
+    :class="{ 'file-drop--active': dragging }"
     role="button"
     tabindex="0"
-    aria-label="Select or drop a video file"
-    @click="emit('browse')"
-    @keydown.enter.prevent="emit('browse')"
-    @keydown.space.prevent="emit('browse')"
-    @dragover.prevent="dragging = true"
+    :aria-label="title"
+    :aria-disabled="disabled"
+    @click="open"
+    @keydown.enter.prevent="open"
+    @keydown.space.prevent="open"
+    @dragover.prevent="dragging = !disabled"
     @dragleave.prevent="dragging = false"
     @drop.prevent="onDrop"
   >
-    <q-avatar
-      rounded
-      size="56px"
-      color="blue-1"
-      text-color="primary"
-      icon="cloud_upload"
-      class="upload-card__icon"
-    />
-    <div class="upload-card__drop-title">Drag and drop your video here</div>
-    <div class="text-caption text-grey-7">or select a file from your device</div>
+    <q-icon :name="icon" size="36px" color="primary" />
+    <div class="file-drop__title">{{ title }}</div>
+    <div class="file-drop__hint">{{ hint }}</div>
     <q-btn
       outline
       rounded
+      dense
       no-caps
       color="primary"
       icon="folder_open"
-      label="Browse files"
-      @click.stop="emit('browse')"
+      label="Browse"
+      class="q-px-md q-mt-xs"
+      :disable="disabled"
+      @click.stop="open"
     />
+    <input ref="inputRef" type="file" :accept="accept" hidden @change="onPick" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 
-const emit = defineEmits(['browse', 'drop'])
+const props = defineProps({
+  title: { type: String, required: true },
+  hint: { type: String, default: '' },
+  icon: { type: String, default: 'cloud_upload' },
+  accept: { type: String, default: '*/*' },
+  disabled: { type: Boolean, default: false }
+})
+const emit = defineEmits(['select'])
+
+const inputRef = ref(null)
 const dragging = ref(false)
+
+const open = () => !props.disabled && inputRef.value?.click()
+
+function onPick(e) {
+  const f = e.target.files?.[0]
+  e.target.value = '' // allow picking the same file again
+  if (f) emit('select', f)
+}
 
 function onDrop(e) {
   dragging.value = false
-  emit('drop', e.dataTransfer?.files?.[0])
+  if (props.disabled) return
+  const f = e.dataTransfer?.files?.[0]
+  if (f) emit('select', f)
 }
 </script>
+
+<style lang="scss" scoped>
+.file-drop {
+  min-height: 200px;
+  box-sizing: border-box;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  border: 1.5px dashed #bcd0ea;
+  border-radius: 14px;
+  background: #f5f9fe;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover,
+  &:focus-visible,
+  &--active {
+    border-color: var(--q-primary);
+    background: #eaf2fd;
+    outline: none;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: #5f6b7a;
+  }
+}
+</style>

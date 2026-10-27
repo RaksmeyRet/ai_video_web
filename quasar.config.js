@@ -67,7 +67,10 @@ export default defineConfig((/* ctx */) => {
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
       proxy: {
-        '/api': { target: 'http://172.16.10.111:8000', changeOrigin: true }
+        '/api': {
+          target: 'https://ciao-scheduled-convenience-caring.trycloudflare.com',
+          changeOrigin: true
+        }
       }
     },
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
